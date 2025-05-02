@@ -1,0 +1,100 @@
+import { useState } from "react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Progress } from "@/components/ui/progress";
+import { motion } from "framer-motion";
+
+export default function JinwooTodoApp() {
+  const [tasks, setTasks] = useState([]);
+  const [input, setInput] = useState("");
+  const [xp, setXp] = useState(0);
+  const [level, setLevel] = useState(1);
+
+  const xpToNextLevel = 100 + (level - 1) * 20;
+
+  const addTask = () => {
+    if (!input.trim()) return;
+    setTasks([...tasks, { text: input, done: false }]);
+    setInput("");
+  };
+
+  const completeTask = (index) => {
+    const newTasks = [...tasks];
+    if (!newTasks[index].done) {
+      newTasks[index].done = true;
+      setXp((prevXp) => {
+        const newXp = prevXp + 20;
+        if (newXp >= xpToNextLevel) {
+          setLevel(level + 1);
+          return newXp - xpToNextLevel;
+        }
+        return newXp;
+      });
+    }
+    setTasks(newTasks);
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-[#000000] via-[#1a1a2e] to-[#16213e] text-white p-4">
+      <div className="max-w-md mx-auto mt-10 space-y-4">
+        <motion.h1
+          className="text-3xl font-bold text-center text-blue-400"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+        >
+          Jinwoo's Quest Log
+        </motion.h1>
+
+        <Card className="bg-gray-800 border-gray-700">
+          <CardContent className="p-4 space-y-4">
+            <div className="flex space-x-2">
+              <Input
+                className="bg-gray-700 text-white placeholder-gray-400"
+                placeholder="Enter a new quest..."
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+              />
+              <Button className="bg-blue-600 hover:bg-blue-700" onClick={addTask}>
+                Add
+              </Button>
+            </div>
+
+            <div className="space-y-2">
+              {tasks.map((task, index) => (
+                <motion.div
+                  key={index}
+                  className={`p-2 rounded border ${
+                    task.done ? "bg-green-500/20 border-green-500" : "bg-gray-700 border-gray-600"
+                  } flex justify-between items-center`}
+                  whileHover={{ scale: 1.02 }}
+                >
+                  <span>{task.text}</span>
+                  {!task.done && (
+                    <Button
+                      size="sm"
+                      className="bg-green-600 hover:bg-green-700"
+                      onClick={() => completeTask(index)}
+                    >
+                      Complete
+                    </Button>
+                  )}
+                </motion.div>
+              ))}
+            </div>
+
+            <div className="pt-4">
+              <p className="text-sm font-medium">
+                Level {level} • XP: {xp} / {xpToNextLevel}
+              </p>
+              <Progress
+                value={(xp / xpToNextLevel) * 100}
+                className="mt-1 bg-gray-600"
+              />
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+}
